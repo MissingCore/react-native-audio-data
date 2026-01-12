@@ -14,6 +14,7 @@ import { pick, types } from '@react-native-documents/picker';
 import {
   getRawPcmData,
   getWaveformDataByPoints,
+  getWaveformData,
   type WaveformMethod,
 } from 'react-native-audio-data';
 
@@ -94,6 +95,7 @@ export default function App() {
 
   const [pointCount, setPointCount] = useState<string>('50');
   const [method, setMethod] = useState<WaveformMethod>('RMS');
+  const [mode, setMode] = useState<'points' | 'ms'>('points');
 
   const methods: WaveformMethod[] = ['RMS', 'LUFS', 'AbsMean'];
 
@@ -103,8 +105,6 @@ export default function App() {
       setLog('Picking file...');
       setSelectedPath(null);
       setWaveformData([]);
-
-      const targetPoints = parseInt(pointCount, 10) || 50;
 
       const results = await pick({
         type: [types.audio],
@@ -120,9 +120,18 @@ export default function App() {
       setSelectedPath(file.uri);
 
       setLog(
-        `Selected: ${file.name}\nProcessing ${targetPoints} points using ${method}...`
+        `Selected: ${file.name}\nProcessing using ${method}...`
       );
-      const points = await getWaveformDataByPoints(file.uri, targetPoints, method);
+
+      let points: number[] = [];
+      const val = parseInt(pointCount, 10) || 50;
+
+      if (mode === 'points') {
+        points = await getWaveformDataByPoints(file.uri, val, method);
+      } else {
+        points = await getWaveformData(file.uri, val, method);
+      }
+
       setWaveformData(points);
 
       const result = await getRawPcmData(file.uri);
@@ -132,7 +141,8 @@ export default function App() {
         (prev) =>
           prev +
           `\n\n✅ Success!` +
-          `\nRequested Points: ${targetPoints}` +
+          `\nMode: ${mode === 'points' ? 'Target Points' : 'Ms Per Point'}` +
+          `\nInput Value: ${val}` +
           `\nMethod: ${method}` +
           `\nActual Points: ${points.length}` +
           `\nBuffer ByteLength: ${buffer.byteLength}` +
@@ -180,13 +190,29 @@ export default function App() {
 
         <View style={styles.settingsContainer}>
           <View style={styles.settingRow}>
-            <Text style={styles.settingLabel}>Target Blocks:</Text>
+            <Text style={styles.settingLabel}>Mode:</Text>
+            <View style={styles.radioGroup}>
+              <RadioButton
+                label="Points"
+                selected={mode === 'points'}
+                onSelect={() => setMode('points')}
+              />
+              <RadioButton
+                label="Ms/Point"
+                selected={mode === 'ms'}
+                onSelect={() => setMode('ms')}
+              />
+            </View>
+          </View>
+          <View style={styles.separator} />
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>{mode === 'points' ? 'Target Points:' : 'Ms Per Point:'}</Text>
             <TextInput
               style={styles.input}
               value={pointCount}
               onChangeText={setPointCount}
               keyboardType="numeric"
-              maxLength={4}
+              maxLength={5}
               placeholder="50"
             />
           </View>

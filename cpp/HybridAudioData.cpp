@@ -111,30 +111,62 @@ namespace margelo::nitro::audiodata {
 #include "CalculateLUFS.hpp"
 
 
+  std::vector<double> calculateWaveform(const AudioDataStruct& audio, double targetPoints, WaveformMethod method) {
+    switch (method) {
+      case WaveformMethod::ABSMEAN:
+        return calculateAbsMean(audio.data, audio.channels, targetPoints);
+      case WaveformMethod::LUFS:
+        return calculateLUFS(audio.data, audio.channels, audio.sampleRate, targetPoints);
+      case WaveformMethod::RMS:
+      default:
+        return calculateRMS(audio.data, audio.channels, targetPoints);
+    }
+  }
+
   std::shared_ptr<Promise<std::vector<double>>> HybridAudioData::getWaveformDataByPoints(const std::string& path, double targetPoints, std::optional<WaveformMethod> method) {
     auto promise = Promise<std::vector<double>>::create();
 
     try {
         auto audio = loadAudioData(path);
         
-        std::vector<double> waveform;
-        waveform.reserve(targetPoints);
+        // Default to RMS if not specified
+        WaveformMethod actualMethod = method.value_or(WaveformMethod::RMS);
+        auto waveform = calculateWaveform(audio, targetPoints, actualMethod);
+        
+        promise->resolve(waveform);
+
+    } catch (const std::exception& e) {
+        promise->reject(std::make_exception_ptr(e));
+    }
+
+    return promise;
+  }
+
+  std::shared_ptr<Promise<std::vector<double>>> HybridAudioData::getWaveformData(const std::string& path, double millisecondsPerPoint, std::optional<WaveformMethod> method) {
+    auto promise = Promise<std::vector<double>>::create();
+
+    try {
+        auto audio = loadAudioData(path);
+        
+        if (millisecondsPerPoint <= 0) {
+           throw std::invalid_argument("millisecondsPerPoint must be greater than 0");
+        }
+
+        // Calculate targetPoints based on millisecondsPerPoint
+        // Total Duration (ms) = (totalPCMFrameCount / sampleRate) * 1000
+        // Target Points = Total Duration / millisecondsPerPoint
+        
+        double durationMs = (static_cast<double>(audio.totalPCMFrameCount) / audio.sampleRate) * 1000.0;
+        double targetPoints = durationMs / millisecondsPerPoint;
+
+        // Ensure at least 1 point if file is short but valid
+        if (targetPoints < 1.0 && audio.totalPCMFrameCount > 0) {
+            targetPoints = 1.0;
+        }
 
         // Default to RMS if not specified
         WaveformMethod actualMethod = method.value_or(WaveformMethod::RMS);
-
-        switch (actualMethod) {
-            case WaveformMethod::ABSMEAN:
-                waveform = calculateAbsMean(audio.data, audio.channels, targetPoints);
-                break;
-            case WaveformMethod::LUFS:
-                waveform = calculateLUFS(audio.data, audio.channels, audio.sampleRate, targetPoints);
-                break;
-            case WaveformMethod::RMS:
-            default:
-                waveform = calculateRMS(audio.data, audio.channels, targetPoints);
-                break;
-        }
+        auto waveform = calculateWaveform(audio, targetPoints, actualMethod);
         
         promise->resolve(waveform);
 

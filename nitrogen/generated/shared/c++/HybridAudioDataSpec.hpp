@@ -58,6 +58,7 @@ namespace margelo::nitro::audiodata {
       // Methods
       virtual std::shared_ptr<Promise<AudioDataResult>> getRawPcmData(const std::string& filePath) = 0;
       virtual std::shared_ptr<Promise<std::vector<double>>> getWaveformDataByPoints(const std::string& filePath, double targetPoints, std::optional<WaveformMethod> method) = 0;
+      virtual std::shared_ptr<Promise<std::vector<double>>> getWaveformData(const std::string& filePath, double millisecondsPerPoint, std::optional<WaveformMethod> method) = 0;
 
     protected:
       // Hybrid Setup

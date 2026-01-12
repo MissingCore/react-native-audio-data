@@ -18,4 +18,10 @@ export interface AudioData
     targetPoints: number,
     method?: WaveformMethod
   ): Promise<number[]>;
+
+  getWaveformData(
+    filePath: string,
+    millisecondsPerPoint: number,
+    method?: WaveformMethod
+  ): Promise<number[]>;
 }

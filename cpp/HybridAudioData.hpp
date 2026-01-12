@@ -21,6 +21,8 @@ namespace margelo::nitro::audiodata {
     std::shared_ptr<Promise<AudioDataResult>> getRawPcmData(const std::string& path) override;
 
     std::shared_ptr<Promise<std::vector<double>>> getWaveformDataByPoints(const std::string& path, double targetPoints, std::optional<WaveformMethod> method) override;
+    
+    std::shared_ptr<Promise<std::vector<double>>> getWaveformData(const std::string& path, double millisecondsPerPoint, std::optional<WaveformMethod> method) override;
   };
 
 }

@@ -57,4 +57,21 @@ export async function getWaveformDataByPoints(
   return AudioDataHybridObject.getWaveformDataByPoints(physicalPath, targetPoints, method);
 }
 
+/**
+ * Decodes an audio file and generates a simplified waveform array based on time resolution.
+ *
+ * @param filePath - The path to the audio file.
+ * @param millisecondsPerPoint - The duration in milliseconds that each data point should represent.
+ * @returns A promise that resolves to an array of numbers representing the waveform.
+ * @throws Will throw an error if the file cannot be read or decoded.
+ */
+export async function getWaveformData(
+  filePath: string,
+  millisecondsPerPoint: number,
+  method: WaveformMethod = 'RMS'
+): Promise<number[]> {
+  const physicalPath = await resolveFilePath(filePath);
+  return AudioDataHybridObject.getWaveformData(physicalPath, millisecondsPerPoint, method);
+}
+
 export type { AudioDataResult, WaveformMethod };
