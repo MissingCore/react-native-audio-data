@@ -2,7 +2,7 @@
 
 A React Native module that provides high-performance, cross-platform access to raw audio data for analysis, visualization, and custom DSP in JavaScript and native code.
 
-Powered by [Nitro Modules](https://nitro.margelo.com/) and `dr_libs` for fast, efficient C++ audio decoding.
+Powered by [Nitro Modules](https://nitro.margelo.com/) and `dr_libs` for stable, efficient C++ audio decoding.
 
 ![Demo](demo.jpg)
 
