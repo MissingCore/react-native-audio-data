@@ -13,7 +13,7 @@ export interface AudioData
   extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   getRawPcmData(filePath: string): Promise<AudioDataResult>;
 
-  getWaveformData(
+  getWaveformDataByPoints(
     filePath: string,
     targetPoints: number,
     method?: WaveformMethod

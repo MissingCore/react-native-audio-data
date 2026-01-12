@@ -13,7 +13,7 @@ import {
 import { pick, types } from '@react-native-documents/picker';
 import {
   getRawPcmData,
-  getWaveformData,
+  getWaveformDataByPoints,
   type WaveformMethod,
 } from 'react-native-audio-data';
 
@@ -122,7 +122,7 @@ export default function App() {
       setLog(
         `Selected: ${file.name}\nProcessing ${targetPoints} points using ${method}...`
       );
-      const points = await getWaveformData(file.uri, targetPoints, method);
+      const points = await getWaveformDataByPoints(file.uri, targetPoints, method);
       setWaveformData(points);
 
       const result = await getRawPcmData(file.uri);

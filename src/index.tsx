@@ -48,13 +48,13 @@ export async function getRawPcmData(
  * @returns A promise that resolves to an array of numbers (RMS values) representing the amplitude of the waveform (0.0 to 1.0).
  * @throws Will throw an error if the file cannot be read or decoded.
  */
-export async function getWaveformData(
+export async function getWaveformDataByPoints(
   filePath: string,
   targetPoints: number,
   method: WaveformMethod = 'RMS'
 ): Promise<number[]> {
   const physicalPath = await resolveFilePath(filePath);
-  return AudioDataHybridObject.getWaveformData(physicalPath, targetPoints, method);
+  return AudioDataHybridObject.getWaveformDataByPoints(physicalPath, targetPoints, method);
 }
 
 export type { AudioDataResult, WaveformMethod };

@@ -15,7 +15,7 @@ namespace margelo::nitro::audiodata {
     // load custom methods/properties
     registerHybrids(this, [](Prototype& prototype) {
       prototype.registerHybridMethod("getRawPcmData", &HybridAudioDataSpec::getRawPcmData);
-      prototype.registerHybridMethod("getWaveformData", &HybridAudioDataSpec::getWaveformData);
+      prototype.registerHybridMethod("getWaveformDataByPoints", &HybridAudioDataSpec::getWaveformDataByPoints);
     });
   }
 

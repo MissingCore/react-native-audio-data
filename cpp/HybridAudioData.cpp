@@ -111,7 +111,7 @@ namespace margelo::nitro::audiodata {
 #include "CalculateLUFS.hpp"
 
 
-  std::shared_ptr<Promise<std::vector<double>>> HybridAudioData::getWaveformData(const std::string& path, double targetPoints, std::optional<WaveformMethod> method) {
+  std::shared_ptr<Promise<std::vector<double>>> HybridAudioData::getWaveformDataByPoints(const std::string& path, double targetPoints, std::optional<WaveformMethod> method) {
     auto promise = Promise<std::vector<double>>::create();
 
     try {
