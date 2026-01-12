@@ -124,6 +124,7 @@ Utility to resolve platform-specific file paths (e.g., Android Content URIs) to 
 ## Roadmap
 
 - [ ] Support decoding while recording (Real-time Analysis)
+- [ ] Full multi-threading supported decoding
 
 ---
 
