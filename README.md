@@ -93,7 +93,8 @@ Decodes the audio file and returns the raw PCM data.
   - `sampleRate` _(number)_: Sample rate in Hz.
   - `totalPCMFrameCount` _(number)_: Total number of PCM frames.
 
-### `getWaveformDataByPoints(filePath: string, targetPoints: number, method?: WaveformMethod)`
+
+### `getWaveformData(filePath: string, millisecondsPerPoint: number, method?: WaveformMethod)`
 
 Generates a waveform where each point represents a specific duration of audio.
 
@@ -103,6 +104,8 @@ Generates a waveform where each point represents a specific duration of audio.
   - `method` _(WaveformMethod, optional)_: Calculation method. Values: `'RMS'` (default), `'AbsMean'`, `'LUFS'`.
 - **Returns**: `Promise<number[]>` containing normalized values.
 
+### `getWaveformDataByPoints(filePath: string, targetPoints: number, method?: WaveformMethod)`
+
 Generates a waveform with a specific fixed number of points.
 
 - **Parameters**:
@@ -110,8 +113,6 @@ Generates a waveform with a specific fixed number of points.
   - `targetPoints` _(number)_: The number of data points you want in the output array.
   - `method` _(WaveformMethod, optional)_: Calculation method. Values: `'RMS'` (default), `'AbsMean'`, `'LUFS'`.
 - **Returns**: `Promise<number[]>` containing normalized values.
-
-### `getWaveformData(filePath: string, millisecondsPerPoint: number, method?: WaveformMethod)`
 
 ### `resolveFilePath(filePath: string)`
 
