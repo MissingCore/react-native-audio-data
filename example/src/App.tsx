@@ -100,7 +100,7 @@ export default function App() {
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [waveformData, setWaveformData] = useState<number[]>([]);
 
-  const [pointCount, setPointCount] = useState<string>('50');
+  const [pointCount, setPointCount] = useState<string>('100');
   const [method, setMethod] = useState<WaveformMethod>('RMS');
   const [mode, setMode] = useState<'points' | 'ms'>('points');
 

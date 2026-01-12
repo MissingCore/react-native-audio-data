@@ -64,16 +64,19 @@ try {
 Quickly generate simplified waveform data for UI visualization (e.g., an audio player progress bar).
 
 ```typescript
-import { getWaveformData } from 'react-native-audio-data';
+import { getWaveformDataByPoints, getWaveformData } from 'react-native-audio-data';
 
 // ...
 
-// Request 100 data points for the waveform
-const points = await getWaveformData('path/to/audio/file.mp3', 100);
+// Option A: Request points by time resolution (e.g. one point every 50ms)
+const timeBasedPoints = await getWaveformData('path/to/audio/file.mp3', 50);
+console.log(timeBasedPoints);
+// Output: [0.02, 0.45, ...] (length depends on audio duration)
 
-// Returns an array of numbers between 0.0 and 1.0 (RMS amplitude)
-console.log(points); 
-// Output: [0.05, 0.23, 0.55, 0.21, ...]
+// Option B: Request a fixed number of data points (e.g. 100 points)
+const fixedPoints = await getWaveformDataByPoints('path/to/audio/file.mp3', 100);
+console.log(fixedPoints); 
+// Output: [0.05, 0.23, ...] (100 items)
 ```
 
 ## API Reference
@@ -90,14 +93,37 @@ Decodes the audio file and returns the raw PCM data.
   - `sampleRate` _(number)_: Sample rate in Hz.
   - `totalPCMFrameCount` _(number)_: Total number of PCM frames.
 
-### `getWaveformData(filePath: string, targetPoints: number)`
+### `getWaveformDataByPoints(filePath: string, targetPoints: number, method?: WaveformMethod)`
 
-Generates a downsampled waveform array for visualization.
+Generates a waveform where each point represents a specific duration of audio.
+
+- **Parameters**:
+  - `filePath` _(string)_: Absolute path or URI to the audio file.
+  - `millisecondsPerPoint` _(number)_: The duration each point should represent (e.g., 50ms).
+  - `method` _(WaveformMethod, optional)_: Calculation method. Values: `'RMS'` (default), `'AbsMean'`, `'LUFS'`.
+- **Returns**: `Promise<number[]>` containing normalized values.
+
+Generates a waveform with a specific fixed number of points.
 
 - **Parameters**:
   - `filePath` _(string)_: Absolute path or URI to the audio file.
   - `targetPoints` _(number)_: The number of data points you want in the output array.
-- **Returns**: `Promise<number[]>` containing RMS amplitude values (0.0 - 1.0).
+  - `method` _(WaveformMethod, optional)_: Calculation method. Values: `'RMS'` (default), `'AbsMean'`, `'LUFS'`.
+- **Returns**: `Promise<number[]>` containing normalized values.
+
+### `getWaveformData(filePath: string, millisecondsPerPoint: number, method?: WaveformMethod)`
+
+### `resolveFilePath(filePath: string)`
+
+Utility to resolve platform-specific file paths (e.g., Android Content URIs) to absolute system paths usable by C++.
+
+- **Parameters**:
+  - `filePath` _(string)_: The raw file path or URI.
+- **Returns**: `Promise<string>` resolving to the absolute file path.
+
+## Roadmap
+
+- [ ] Support decoding while recording (Real-time Analysis)
 
 ---
 

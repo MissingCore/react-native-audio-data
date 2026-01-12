@@ -40,28 +40,11 @@ export async function getRawPcmData(
 }
 
 /**
- * Decodes an audio file and generates a simplified waveform array.
- * The waveform is calculated using RMS (Root Mean Square) for each block of samples.
- *
- * @param filePath - The path to the audio file.
- * @param targetPoints - The desired number of data points in the returned waveform.
- * @returns A promise that resolves to an array of numbers (RMS values) representing the amplitude of the waveform (0.0 to 1.0).
- * @throws Will throw an error if the file cannot be read or decoded.
- */
-export async function getWaveformDataByPoints(
-  filePath: string,
-  targetPoints: number,
-  method: WaveformMethod = 'RMS'
-): Promise<number[]> {
-  const physicalPath = await resolveFilePath(filePath);
-  return AudioDataHybridObject.getWaveformDataByPoints(physicalPath, targetPoints, method);
-}
-
-/**
  * Decodes an audio file and generates a simplified waveform array based on time resolution.
  *
  * @param filePath - The path to the audio file.
  * @param millisecondsPerPoint - The duration in milliseconds that each data point should represent.
+ * @param method - The method used to calculate the waveform points ('RMS', 'AbsMean', 'LUFS'). Defaults to 'RMS'.
  * @returns A promise that resolves to an array of numbers representing the waveform.
  * @throws Will throw an error if the file cannot be read or decoded.
  */
@@ -72,6 +55,24 @@ export async function getWaveformData(
 ): Promise<number[]> {
   const physicalPath = await resolveFilePath(filePath);
   return AudioDataHybridObject.getWaveformData(physicalPath, millisecondsPerPoint, method);
+}
+
+/**
+ * Decodes an audio file and generates a simplified waveform array.
+ *
+ * @param filePath - The path to the audio file.
+ * @param targetPoints - The desired number of data points in the returned waveform.
+ * @param method - The method used to calculate the waveform points ('RMS', 'AbsMean', 'LUFS'). Defaults to 'RMS'.
+ * @returns A promise that resolves to an array of numbers (RMS values) representing the amplitude of the waveform (0.0 to 1.0).
+ * @throws Will throw an error if the file cannot be read or decoded.
+ */
+export async function getWaveformDataByPoints(
+  filePath: string,
+  targetPoints: number,
+  method: WaveformMethod = 'RMS'
+): Promise<number[]> {
+  const physicalPath = await resolveFilePath(filePath);
+  return AudioDataHybridObject.getWaveformDataByPoints(physicalPath, targetPoints, method);
 }
 
 export type { AudioDataResult, WaveformMethod };
