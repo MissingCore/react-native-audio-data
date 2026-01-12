@@ -7,9 +7,15 @@ export interface AudioDataResult {
   totalPCMFrameCount: number;
 }
 
+export type WaveformMethod = 'RMS' | 'LUFS' | 'AbsMean';
+
 export interface AudioData
   extends HybridObject<{ ios: 'c++'; android: 'c++' }> {
   getRawPcmData(filePath: string): Promise<AudioDataResult>;
 
-  getWaveformData(filePath: string, targetPoints: number): Promise<number[]>;
+  getWaveformData(
+    filePath: string,
+    targetPoints: number,
+    method?: WaveformMethod
+  ): Promise<number[]>;
 }

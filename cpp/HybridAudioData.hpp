@@ -3,11 +3,13 @@
 #include <vector>
 #include <string>
 #include <memory>
+#include <optional>
 
 #include <NitroModules/Promise.hpp>
 #include <NitroModules/ArrayBuffer.hpp>
 
 #include "HybridAudioDataSpec.hpp"
+#include "WaveformMethod.hpp"
 
 namespace margelo::nitro::audiodata {
 
@@ -18,7 +20,7 @@ namespace margelo::nitro::audiodata {
 
     std::shared_ptr<Promise<AudioDataResult>> getRawPcmData(const std::string& path) override;
 
-    std::shared_ptr<Promise<std::vector<double>>> getWaveformData(const std::string& path, double targetPoints) override;
+    std::shared_ptr<Promise<std::vector<double>>> getWaveformData(const std::string& path, double targetPoints, std::optional<WaveformMethod> method) override;
   };
 
 }

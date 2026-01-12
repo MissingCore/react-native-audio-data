@@ -15,11 +15,15 @@
 
 // Forward declaration of `AudioDataResult` to properly resolve imports.
 namespace margelo::nitro::audiodata { struct AudioDataResult; }
+// Forward declaration of `WaveformMethod` to properly resolve imports.
+namespace margelo::nitro::audiodata { enum class WaveformMethod; }
 
 #include "AudioDataResult.hpp"
 #include <NitroModules/Promise.hpp>
 #include <string>
 #include <vector>
+#include "WaveformMethod.hpp"
+#include <optional>
 
 namespace margelo::nitro::audiodata {
 
@@ -53,7 +57,7 @@ namespace margelo::nitro::audiodata {
     public:
       // Methods
       virtual std::shared_ptr<Promise<AudioDataResult>> getRawPcmData(const std::string& filePath) = 0;
-      virtual std::shared_ptr<Promise<std::vector<double>>> getWaveformData(const std::string& filePath, double targetPoints) = 0;
+      virtual std::shared_ptr<Promise<std::vector<double>>> getWaveformData(const std::string& filePath, double targetPoints, std::optional<WaveformMethod> method) = 0;
 
     protected:
       // Hybrid Setup

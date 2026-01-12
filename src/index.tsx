@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import { NitroModules } from 'react-native-nitro-modules';
-import type { AudioData, AudioDataResult } from './AudioData.nitro';
+import type { AudioData, AudioDataResult, WaveformMethod } from './AudioData.nitro';
 import type { FileHelper } from './FileHelper.nitro';
 
 const AudioDataHybridObject =
@@ -50,10 +50,11 @@ export async function getRawPcmData(
  */
 export async function getWaveformData(
   filePath: string,
-  targetPoints: number
+  targetPoints: number,
+  method: WaveformMethod = 'RMS'
 ): Promise<number[]> {
   const physicalPath = await resolveFilePath(filePath);
-  return AudioDataHybridObject.getWaveformData(physicalPath, targetPoints);
+  return AudioDataHybridObject.getWaveformData(physicalPath, targetPoints, method);
 }
 
-export type { AudioDataResult };
+export type { AudioDataResult, WaveformMethod };

@@ -7,10 +7,15 @@ import {
   ScrollView,
   SafeAreaView,
   TextInput,
+  TouchableOpacity,
 } from 'react-native';
 
 import { pick, types } from '@react-native-documents/picker';
-import { getRawPcmData, getWaveformData } from 'react-native-audio-data';
+import {
+  getRawPcmData,
+  getWaveformData,
+  type WaveformMethod,
+} from 'react-native-audio-data';
 
 const WaveformView = ({ data }: { data: number[] }) => {
   if (!data || data.length === 0) {
@@ -21,7 +26,7 @@ const WaveformView = ({ data }: { data: number[] }) => {
     );
   }
 
-  const maxVal = Math.max(...data, 0.0001);
+  const maxVal = Math.max(...data, 0.00001);
   const scale = 1 / maxVal;
 
   return (
@@ -29,7 +34,13 @@ const WaveformView = ({ data }: { data: number[] }) => {
       <Text style={styles.chartTitle}>
         WAVEFORM PREVIEW ({data.length} points)
       </Text>
-      <View style={styles.barsContainer}>
+      <Text style={styles.scrollHint}>↔ Scrollable</Text>
+      <ScrollView
+        horizontal
+        style={styles.scrollView}
+        contentContainerStyle={styles.barsContainer}
+        showsHorizontalScrollIndicator={true}
+      >
         {data.map((value, index) => {
           let heightPercent = value * scale * 100;
           heightPercent = Math.max(heightPercent, 2);
@@ -46,10 +57,34 @@ const WaveformView = ({ data }: { data: number[] }) => {
             />
           );
         })}
-      </View>
+      </ScrollView>
     </View>
   );
 };
+
+const RadioButton = ({
+  label,
+  selected,
+  onSelect,
+}: {
+  label: string;
+  selected: boolean;
+  onSelect: () => void;
+}) => (
+  <TouchableOpacity
+    style={[styles.radioButton, selected && styles.radioButtonSelected]}
+    onPress={onSelect}
+  >
+    <Text
+      style={[
+        styles.radioButtonText,
+        selected && styles.radioButtonTextSelected,
+      ]}
+    >
+      {label}
+    </Text>
+  </TouchableOpacity>
+);
 
 export default function App() {
   const [log, setLog] = useState<string>('Waiting for action...');
@@ -58,6 +93,9 @@ export default function App() {
   const [waveformData, setWaveformData] = useState<number[]>([]);
 
   const [pointCount, setPointCount] = useState<string>('50');
+  const [method, setMethod] = useState<WaveformMethod>('RMS');
+
+  const methods: WaveformMethod[] = ['RMS', 'LUFS', 'AbsMean'];
 
   const handlePickAndProcess = async () => {
     try {
@@ -81,8 +119,10 @@ export default function App() {
 
       setSelectedPath(file.uri);
 
-      setLog(`Selected: ${file.name}\nProcessing ${targetPoints} points...`);
-      const points = await getWaveformData(file.uri, targetPoints);
+      setLog(
+        `Selected: ${file.name}\nProcessing ${targetPoints} points using ${method}...`
+      );
+      const points = await getWaveformData(file.uri, targetPoints, method);
       setWaveformData(points);
 
       const result = await getRawPcmData(file.uri);
@@ -93,6 +133,7 @@ export default function App() {
           prev +
           `\n\n✅ Success!` +
           `\nRequested Points: ${targetPoints}` +
+          `\nMethod: ${method}` +
           `\nActual Points: ${points.length}` +
           `\nBuffer ByteLength: ${buffer.byteLength}` +
           `\nChannels: ${channels}` +
@@ -138,15 +179,31 @@ export default function App() {
         <WaveformView data={waveformData} />
 
         <View style={styles.settingsContainer}>
-          <Text style={styles.settingLabel}>Target Blocks:</Text>
-          <TextInput
-            style={styles.input}
-            value={pointCount}
-            onChangeText={setPointCount}
-            keyboardType="numeric"
-            maxLength={4}
-            placeholder="50"
-          />
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Target Blocks:</Text>
+            <TextInput
+              style={styles.input}
+              value={pointCount}
+              onChangeText={setPointCount}
+              keyboardType="numeric"
+              maxLength={4}
+              placeholder="50"
+            />
+          </View>
+          <View style={styles.separator} />
+          <View style={styles.settingRow}>
+            <Text style={styles.settingLabel}>Method:</Text>
+            <View style={styles.radioGroup}>
+              {methods.map((m) => (
+                <RadioButton
+                  key={m}
+                  label={m}
+                  selected={method === m}
+                  onSelect={() => setMethod(m)}
+                />
+              ))}
+            </View>
+          </View>
         </View>
 
         <View style={styles.buttonContainer}>
@@ -204,14 +261,18 @@ const styles = StyleSheet.create({
     fontFamily: 'monospace',
   },
   waveformContainer: {
-    height: 100,
+    height: 120,
     backgroundColor: '#1a1a1a',
     borderRadius: 8,
-    padding: 10,
+    paddingVertical: 10,
     marginBottom: 20,
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: '#333',
+  },
+  scrollView: {
+    marginTop: 15,
+    flex: 1,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -232,24 +293,36 @@ const styles = StyleSheet.create({
     color: '#555',
     fontSize: 9,
     fontWeight: 'bold',
+    zIndex: 10,
+  },
+  scrollHint: {
+    position: 'absolute',
+    top: 8,
+    right: 10,
+    color: '#ffffff',
+    fontSize: 11,
+    fontWeight: 'bold',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+    overflow: 'hidden',
+    zIndex: 10,
   },
   barsContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    height: '100%',
-    paddingTop: 8,
+    minWidth: '100%',
+    paddingHorizontal: 10,
   },
   bar: {
-    flex: 1,
+    width: 4,
     backgroundColor: '#00e5ff',
     marginHorizontal: 1,
     borderRadius: 2,
     minHeight: 2,
   },
   settingsContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
     marginBottom: 15,
     backgroundColor: '#fff',
     padding: 10,
@@ -257,9 +330,19 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ddd',
   },
+  settingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 5,
+  },
+  separator: {
+    height: 1,
+    backgroundColor: '#eee',
+    marginVertical: 5,
+  },
   settingLabel: {
     fontSize: 16,
-    marginRight: 10,
     color: '#333',
     fontWeight: '500',
   },
@@ -269,10 +352,34 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     paddingHorizontal: 10,
     paddingVertical: 4,
-    width: 80,
+    width: 60,
     textAlign: 'center',
     fontSize: 16,
     color: '#000',
+  },
+  radioGroup: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  radioButton: {
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#999',
+    backgroundColor: '#f0f0f0',
+  },
+  radioButtonSelected: {
+    backgroundColor: '#007aff',
+    borderColor: '#007aff',
+  },
+  radioButtonText: {
+    fontSize: 12,
+    color: '#333',
+  },
+  radioButtonTextSelected: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
   buttonContainer: {
     marginBottom: 20,
