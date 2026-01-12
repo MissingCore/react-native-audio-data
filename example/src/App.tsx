@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Text,
   View,
@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { pick, types } from '@react-native-documents/picker';
+import Video from 'react-native-video';
 import {
   getRawPcmData,
   getWaveformDataByPoints,
@@ -18,7 +19,7 @@ import {
   type WaveformMethod,
 } from 'react-native-audio-data';
 
-const WaveformView = ({ data }: { data: number[] }) => {
+const WaveformView = ({ data, progress }: { data: number[], progress: number }) => {
   if (!data || data.length === 0) {
     return (
       <View style={[styles.waveformContainer, styles.emptyContainer]}>
@@ -45,6 +46,11 @@ const WaveformView = ({ data }: { data: number[] }) => {
         {data.map((value, index) => {
           let heightPercent = value * scale * 100;
           heightPercent = Math.max(heightPercent, 2);
+
+          // Determine if this bar is "played"
+          // progress is 0..1. The index corresponding to progress is floor(progress * data.length)
+          const isPlayed = index / data.length < progress;
+
           return (
             <View
               key={index}
@@ -52,7 +58,8 @@ const WaveformView = ({ data }: { data: number[] }) => {
                 styles.bar,
                 {
                   height: `${heightPercent}%`,
-                  opacity: 0.5 + value * scale * 0.5,
+                  opacity: isPlayed ? 1.0 : (0.5 + value * scale * 0.5),
+                  backgroundColor: isPlayed ? '#00ff00' : '#00e5ff',
                 },
               ]}
             />
@@ -97,7 +104,60 @@ export default function App() {
   const [method, setMethod] = useState<WaveformMethod>('RMS');
   const [mode, setMode] = useState<'points' | 'ms'>('points');
 
+  // Video Player State
+  const [paused, setPaused] = useState(true);
+  const [progress, setProgress] = useState(0);
+  const [duration, setDuration] = useState(0);
+
+  // Animation Refs
+  const lastUpdate = useRef<{ time: number; timestamp: number } | null>(null);
+  const animationFrame = useRef<number | null>(null);
+
   const methods: WaveformMethod[] = ['RMS', 'LUFS', 'AbsMean'];
+
+  const startAnimationLoop = () => {
+    if (animationFrame.current) cancelAnimationFrame(animationFrame.current);
+
+    const loop = () => {
+      if (lastUpdate.current && duration > 0) {
+        const now = Date.now();
+        const elapsed = (now - lastUpdate.current.timestamp) / 1000;
+        const estimatedTime = lastUpdate.current.time + elapsed;
+        const newProgress = Math.min(estimatedTime / duration, 1.0);
+        setProgress(newProgress);
+      }
+      animationFrame.current = requestAnimationFrame(loop);
+    };
+    animationFrame.current = requestAnimationFrame(loop);
+  };
+
+  const stopAnimationLoop = () => {
+    if (animationFrame.current) {
+      cancelAnimationFrame(animationFrame.current);
+      animationFrame.current = null;
+    }
+  };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => stopAnimationLoop();
+  }, []);
+
+  const togglePlayback = () => {
+    const nextPaused = !paused;
+    setPaused((prev) => !prev);
+
+    if (nextPaused) {
+      stopAnimationLoop();
+    } else {
+      // Reset last update if starting from scratch or re-playing
+      if (progress >= 1) {
+        lastUpdate.current = { time: 0, timestamp: Date.now() };
+        setProgress(0);
+      }
+      startAnimationLoop();
+    }
+  };
 
   const handlePickAndProcess = async () => {
     try {
@@ -105,6 +165,13 @@ export default function App() {
       setLog('Picking file...');
       setSelectedPath(null);
       setWaveformData([]);
+
+      // Reset player state
+      setPaused(true);
+      setProgress(0);
+      setDuration(0);
+      stopAnimationLoop();
+      lastUpdate.current = null;
 
       const results = await pick({
         type: [types.audio],
@@ -186,7 +253,47 @@ export default function App() {
           </View>
         )}
 
-        <WaveformView data={waveformData} />
+        <WaveformView data={waveformData} progress={progress} />
+
+        {selectedPath && (
+          <View style={styles.playerContainer}>
+            <Video
+              source={{ uri: selectedPath }}
+              paused={paused}
+              onLoad={(data) => {
+                setDuration(data.duration);
+                console.log('Video loaded', data.duration);
+              }}
+              onProgress={(data) => {
+                // Sync authoritative time
+                lastUpdate.current = { time: data.currentTime, timestamp: Date.now() };
+
+                // If paused, we want exact sync. If playing, the loop handles it.
+                if (paused && duration > 0) {
+                  setProgress(data.currentTime / duration);
+                }
+              }}
+              onEnd={() => {
+                setPaused(true);
+                setProgress(1);
+                stopAnimationLoop();
+                console.log('Video ended');
+              }}
+              onError={(e) => console.log('Video error', e)}
+              audioOnly={true}
+              repeat={false}
+              ignoreSilentSwitch="ignore"
+              progressUpdateInterval={250}
+            />
+            <Button
+              title={paused ? "Play Audio" : "Pause"}
+              onPress={togglePlayback}
+            />
+            <Text style={styles.progressText}>
+              {(progress * duration).toFixed(1)}s / {duration.toFixed(1)}s
+            </Text>
+          </View>
+        )}
 
         <View style={styles.settingsContainer}>
           <View style={styles.settingRow}>
@@ -260,7 +367,7 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
   },
   header: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 20,
@@ -426,5 +533,21 @@ const styles = StyleSheet.create({
     color: '#00ff00',
     fontFamily: 'monospace',
     fontSize: 12,
+  },
+  playerContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  progressText: {
+    fontSize: 14,
+    color: '#555',
+    fontWeight: 'bold',
   },
 });

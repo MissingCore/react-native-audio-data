@@ -2116,6 +2116,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@react-native-documents/picker@npm:^11.0.3":
+  version: 11.0.4
+  resolution: "@react-native-documents/picker@npm:11.0.4"
+  peerDependencies:
+    react: "*"
+    react-native: ">=0.79.0"
+  checksum: 10c0/041bb024f623ebc7db10b9a9e4dad7fd76b00d1a3097e13bf04b89bf6e30947ef4c1fdb653d3adcaae0bc40e94fc06aec7317a66a3fd670cb521d81dc3c19acf
+  languageName: node
+  linkType: hard
+
 "@react-native/assets-registry@npm:0.83.0":
   version: 0.83.0
   resolution: "@react-native/assets-registry@npm:0.83.0"
@@ -7390,6 +7400,7 @@ __metadata:
     "@react-native-community/cli": "npm:20.0.0"
     "@react-native-community/cli-platform-android": "npm:20.0.0"
     "@react-native-community/cli-platform-ios": "npm:20.0.0"
+    "@react-native-documents/picker": "npm:^11.0.3"
     "@react-native/babel-preset": "npm:0.83.0"
     "@react-native/metro-config": "npm:0.83.0"
     "@react-native/typescript-config": "npm:0.83.0"
@@ -7399,6 +7410,7 @@ __metadata:
     react-native-builder-bob: "npm:^0.40.13"
     react-native-monorepo-config: "npm:^0.3.1"
     react-native-nitro-modules: "npm:^0.31.10"
+    react-native-video: "npm:^6.0.0-beta.6"
   languageName: unknown
   linkType: soft
 
@@ -7480,6 +7492,16 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/0acc6ca5f12e24a6601e682070f257a771b95214c11fba911b342af705071234544c93076900f43400c8ae2f1a6738011b120e4425813968102997860ffd7626
+  languageName: node
+  linkType: hard
+
+"react-native-video@npm:^6.0.0-beta.6":
+  version: 6.18.0
+  resolution: "react-native-video@npm:6.18.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/4810181cb99753a78db2081da0b3d5a73c5eab60cd59f72cac7b7eb026378c353cea749ee8ab9ebcd5b12a0ad01818155b7cbba1c2674818034a353ab581a03c
   languageName: node
   linkType: hard
 
