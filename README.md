@@ -100,7 +100,7 @@ Generates a waveform where each point represents a specific duration of audio.
 
 - **Parameters**:
   - `filePath` _(string)_: Absolute path or URI to the audio file.
-  - `millisecondsPerPoint` _(number)_: The duration each point should represent (e.g., 50ms).
+  - `millisecondsPerPoint` _(number)_: The duration each point should represent (e.g., 100ms).
   - `method` _(WaveformMethod, optional)_: Calculation method. Values: `'RMS'` (default), `'AbsMean'`, `'LUFS'`.
 - **Returns**: `Promise<number[]>` containing normalized values.
 
