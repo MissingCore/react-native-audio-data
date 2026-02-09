@@ -9,7 +9,8 @@ Powered by [Nitro Modules](https://nitro.margelo.com/) and `dr_libs` for stable,
 ## Features
 
 - ⚡️ **High Performance**: Uses C++ directly via JSI for near-native performance.
-- 🪶 **Lightweight**: Zero heavy dependencies like FFmpeg. Uses `dr_libs` for minimal footprint.
+- � **Asynchronous**: All decoding and waveform generation runs on background threads to keep the UI at 60fps.
+- �🪶 **Lightweight**: Zero heavy dependencies like FFmpeg. Uses `dr_libs` for minimal footprint.
 - 🔊 **Format Support**: Decodes **MP3**, **WAV**, and **FLAC** files.
 - 🌊 **Waveform Generation**: High-speed waveform data generation for visualization. Multiple methods supported including **RMS**, **LUFS** and **Abs Mean**.
 - 🎹 **Raw PCM Data**: Access raw `Float32` audio samples for finding peaks, normalization, or custom processing.
@@ -125,7 +126,7 @@ Utility to resolve platform-specific file paths (e.g., Android Content URIs) to 
 ## Roadmap
 
 - [ ] Support decoding while recording (Real-time Analysis)
-- [ ] Full multi-threading supported decoding
+- [x] Full multi-threading supported decoding
 
 ---
 

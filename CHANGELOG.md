@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.0
+
+### Improvements
+- **True Async Decoding**: All audio decoding and waveform calculation methods now run on dedicated background threads in C++, ensuring the main thread remains completely unblocked during heavy processing.
+
 ## 1.0.1
 
 - Documentation updates
