@@ -3,6 +3,7 @@
 #include <cctype>
 #include <cmath>
 #include <algorithm>
+#include <thread>
 
 #include "dr_wav.h"
 #include "dr_mp3.h"
@@ -82,34 +83,35 @@ namespace margelo::nitro::audiodata {
   std::shared_ptr<Promise<AudioDataResult>> HybridAudioData::getRawPcmData(const std::string& path) {
     auto promise = Promise<AudioDataResult>::create();
 
-    try {
-      auto audio = loadAudioData(path);
+    std::thread t([promise, path] {
+      try {
+        auto audio = loadAudioData(path);
 
-      size_t byteSize = audio.data.size() * sizeof(float);
-      const uint8_t* uInt8Data = reinterpret_cast<const uint8_t*>(audio.data.data());
-      auto buffer = ArrayBuffer::copy(uInt8Data, byteSize);
-      
-      AudioDataResult result;
-      result.buffer = buffer;
-      result.channels = static_cast<double>(audio.channels);
-      result.sampleRate = static_cast<double>(audio.sampleRate);
-      result.totalPCMFrameCount = static_cast<double>(audio.totalPCMFrameCount);
-      
-      promise->resolve(result);
-
-    } catch (const std::exception& e) {
-      promise->reject(std::make_exception_ptr(e));
-    }
+        size_t byteSize = audio.data.size() * sizeof(float);
+        const uint8_t* uInt8Data = reinterpret_cast<const uint8_t*>(audio.data.data());
+        auto buffer = ArrayBuffer::copy(uInt8Data, byteSize);
+        
+        AudioDataResult result;
+        result.buffer = buffer;
+        result.channels = static_cast<double>(audio.channels);
+        result.sampleRate = static_cast<double>(audio.sampleRate);
+        result.totalPCMFrameCount = static_cast<double>(audio.totalPCMFrameCount);
+        
+        promise->resolve(result);
+      }
+      }
+      catch (const std::exception& e) {
+        promise->reject(std::make_exception_ptr(e));
+      }
+      catch (...) {
+        promise->reject(std::make_exception_ptr(std::runtime_error("Unknown error in getRawPcmData")));
+      }
+    });
+ 
+    t.detach();
     
     return promise;
   }
-
-
-
-#include "CalculateRMS.hpp"
-#include "CalculateAbsMean.hpp"
-#include "CalculateLUFS.hpp"
-
 
   std::vector<double> calculateWaveform(const AudioDataStruct& audio, double targetPoints, WaveformMethod method) {
     switch (method) {
@@ -126,7 +128,8 @@ namespace margelo::nitro::audiodata {
   std::shared_ptr<Promise<std::vector<double>>> HybridAudioData::getWaveformDataByPoints(const std::string& path, double targetPoints, std::optional<WaveformMethod> method) {
     auto promise = Promise<std::vector<double>>::create();
 
-    try {
+    std::thread t([promise, path, targetPoints, method] {
+      try {
         auto audio = loadAudioData(path);
         
         // Default to RMS if not specified
@@ -134,18 +137,23 @@ namespace margelo::nitro::audiodata {
         auto waveform = calculateWaveform(audio, targetPoints, actualMethod);
         
         promise->resolve(waveform);
-
-    } catch (const std::exception& e) {
+      } catch (const std::exception& e) {
         promise->reject(std::make_exception_ptr(e));
-    }
+      } catch (...) {
+        promise->reject(std::make_exception_ptr(std::runtime_error("Unknown error in getWaveformDataByPoints")));
+      }
+    });
 
+    t.detach();
+    
     return promise;
   }
 
   std::shared_ptr<Promise<std::vector<double>>> HybridAudioData::getWaveformData(const std::string& path, double millisecondsPerPoint, std::optional<WaveformMethod> method) {
     auto promise = Promise<std::vector<double>>::create();
 
-    try {
+    std::thread t([promise, path, millisecondsPerPoint, method] {
+      try {
         auto audio = loadAudioData(path);
         
         if (millisecondsPerPoint <= 0) {
@@ -155,7 +163,6 @@ namespace margelo::nitro::audiodata {
         // Calculate targetPoints based on millisecondsPerPoint
         // Total Duration (ms) = (totalPCMFrameCount / sampleRate) * 1000
         // Target Points = Total Duration / millisecondsPerPoint
-        
         double durationMs = (static_cast<double>(audio.totalPCMFrameCount) / audio.sampleRate) * 1000.0;
         double targetPoints = durationMs / millisecondsPerPoint;
 
@@ -170,9 +177,14 @@ namespace margelo::nitro::audiodata {
         
         promise->resolve(waveform);
 
-    } catch (const std::exception& e) {
+      } catch (const std::exception& e) {
         promise->reject(std::make_exception_ptr(e));
-    }
+      } catch (...) {
+        promise->reject(std::make_exception_ptr(std::runtime_error("Unknown error in getWaveformData")));
+      }
+    });
+
+    t.detach();
 
     return promise;
   }
