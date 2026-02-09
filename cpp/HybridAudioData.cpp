@@ -99,12 +99,8 @@ namespace margelo::nitro::audiodata {
         
         promise->resolve(result);
       }
-      }
       catch (const std::exception& e) {
         promise->reject(std::make_exception_ptr(e));
-      }
-      catch (...) {
-        promise->reject(std::make_exception_ptr(std::runtime_error("Unknown error in getRawPcmData")));
       }
     });
  
