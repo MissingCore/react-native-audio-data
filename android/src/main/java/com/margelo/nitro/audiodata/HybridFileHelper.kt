@@ -5,6 +5,8 @@ import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.webkit.MimeTypeMap
+import androidx.annotation.Keep
+import com.facebook.proguard.annotations.DoNotStrip
 import com.margelo.nitro.core.Promise
 import java.io.File
 import java.io.FileOutputStream
@@ -15,6 +17,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
+@Keep
+@DoNotStrip
 class HybridFileHelper : HybridFileHelperSpec() {
 
     // 👇 定义一个协程作用域，指定使用 IO 调度器 (专门用于文件读写)
