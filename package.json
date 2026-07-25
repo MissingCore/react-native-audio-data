@@ -37,6 +37,7 @@
     "example": "yarn workspace react-native-audio-data-example",
     "clean": "del-cli android/build example/android/build example/android/app/build example/ios/build lib",
     "prepare": "bob build",
+    "prepack": "yarn clean && yarn prepare && yarn nitrogen",
     "nitrogen": "nitrogen",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\""
